@@ -13,6 +13,6 @@ setup(
         'matplotlib',
         'scikit-image',
         'pillow',
-        'spams'
+        'spams-bin'
     ]
 )
