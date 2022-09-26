@@ -1,5 +1,5 @@
 import numpy as np
-import cv2 as cv
+from skimage import color
 import spams
 import copy
 from stainlib.utils.excepts import TissueMaskException
@@ -39,7 +39,7 @@ class LuminosityThresholdTissueLocator(ABCTissueLocator):
         :return: Binary mask.
         """
         assert is_uint8_image(I), "Image should be RGB uint8."
-        I_LAB = cv.cvtColor(I, cv.COLOR_RGB2LAB)
+        I_LAB = color.rgb2lab(I)
         L = I_LAB[:, :, 0] / 255.0  # Convert to range [0,1].
         mask = L < luminosity_threshold
 
@@ -60,11 +60,11 @@ class LuminosityStandardizer(object):
         :return: Image uint8 RGB with standardized brightness.
         """
         assert is_uint8_image(I), "Image should be RGB uint8."
-        I_LAB = cv.cvtColor(I, cv.COLOR_RGB2LAB)
+        I_LAB = color.rgb2lab(I)
         L_float = I_LAB[:, :, 0].astype(float)
         p = np.percentile(L_float, percentile)
         I_LAB[:, :, 0] = np.clip(255 * L_float / p, 0, 255).astype(np.uint8)
-        I = cv.cvtColor(I_LAB, cv.COLOR_LAB2RGB)
+        I = color.lab2rgb(I_LAB)
         return I
 
 
@@ -162,9 +162,9 @@ def lab_split(I):
     :param I: uint8
     :return:
     """
-    I = cv.cvtColor(I, cv.COLOR_RGB2LAB)
+    I = color.rgb2lab(I)
     I = I.astype(np.float32)
-    I1, I2, I3 = cv.split(I)
+    I1, I2, I3 = I[..., 0], I[..., 1], I[..., 2]
     I1 /= 2.55
     I2 -= 128.0
     I3 -= 128.0
@@ -182,8 +182,8 @@ def merge_back(I1, I2, I3):
     I1 *= 2.55
     I2 += 128.0
     I3 += 128.0
-    I = np.clip(cv.merge((I1, I2, I3)), 0, 255).astype(np.uint8)
-    return cv.cvtColor(I, cv.COLOR_LAB2RGB)
+    I = np.clip(np.dstack((I1, I2, I3)), 0, 255).astype(np.uint8)
+    return color.lab2rgb(I)
 
 
 def get_mean_std(I):
@@ -193,9 +193,9 @@ def get_mean_std(I):
     :return:
     """
     I1, I2, I3 = lab_split(I)
-    m1, sd1 = cv.meanStdDev(I1)
-    m2, sd2 = cv.meanStdDev(I2)
-    m3, sd3 = cv.meanStdDev(I3)
+    m1, sd1 = I1.mean(), I1.std()
+    m2, sd2 = I2.mean(), I2.std()
+    m3, sd3 = I3.mean(), I3.std()
     means = m1, m2, m3
     stds = sd1, sd2, sd3
     return means, stds

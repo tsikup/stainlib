@@ -6,11 +6,14 @@ import skimage.color
 from skimage.color import rgb2gray
 import numpy as np
 import copy
-from stainlib.utils.excepts import  InvalidRangeError
+from stainlib.utils.excepts import InvalidRangeError
 from stainlib.extraction.macenko_stain_extractor import MacenkoStainExtractor
 from stainlib.extraction.vahadane_stain_extractor import VahadaneStainExtractor
-from stainlib.utils.stain_utils import get_concentrations, LuminosityThresholdTissueLocator
-#
+from stainlib.utils.stain_utils import (
+    get_concentrations,
+    LuminosityThresholdTissueLocator,
+)
+
 
 class AugmenterBase(object):
     """Base class for patch augmentation."""
@@ -65,6 +68,7 @@ class AugmenterBase(object):
         """Randomize the parameters of the augmenter."""
         pass
 
+
 class ColorAugmenterBase(AugmenterBase):
     """Base class for color patch augmentation."""
 
@@ -78,6 +82,7 @@ class ColorAugmenterBase(AugmenterBase):
 
         # Initialize the base class.
         super().__init__(keyword=keyword)
+
 
 class HedColorAugmenter(ColorAugmenterBase):
     """Apply color correction in HED color space on the RGB patch."""
@@ -137,7 +142,9 @@ class HedColorAugmenter(ColorAugmenterBase):
         )
         self._setcutoffrange(cutoff_range=cutoff_range)
 
-    def _setsigmaranges(self, haematoxylin_sigma_range, eosin_sigma_range, dab_sigma_range):
+    def _setsigmaranges(
+        self, haematoxylin_sigma_range, eosin_sigma_range, dab_sigma_range
+    ):
         """
         Set the sigma intervals.
 
@@ -160,7 +167,7 @@ class HedColorAugmenter(ColorAugmenterBase):
                 or haematoxylin_sigma_range[0] < -1.0
                 or 1.0 < haematoxylin_sigma_range[1]
             ):
-                raise InvalidRangeError('Haematoxylin Sigma', haematoxylin_sigma_range)
+                raise InvalidRangeError("Haematoxylin Sigma", haematoxylin_sigma_range)
 
         if eosin_sigma_range is not None:
             if (
@@ -169,7 +176,7 @@ class HedColorAugmenter(ColorAugmenterBase):
                 or eosin_sigma_range[0] < -1.0
                 or 1.0 < eosin_sigma_range[1]
             ):
-                raise InvalidRangeError('Eosin Sigma', eosin_sigma_range)
+                raise InvalidRangeError("Eosin Sigma", eosin_sigma_range)
 
         if dab_sigma_range is not None:
             if (
@@ -178,7 +185,7 @@ class HedColorAugmenter(ColorAugmenterBase):
                 or dab_sigma_range[0] < -1.0
                 or 1.0 < dab_sigma_range[1]
             ):
-                raise InvalidRangeError('Dab Sigma', dab_sigma_range)
+                raise InvalidRangeError("Dab Sigma", dab_sigma_range)
 
         # Store the settings.
         self._sigma_ranges = [
@@ -188,7 +195,9 @@ class HedColorAugmenter(ColorAugmenterBase):
         ]
 
         self._sigmas = [
-            haematoxylin_sigma_range[0] if haematoxylin_sigma_range is not None else 0.0,
+            haematoxylin_sigma_range[0]
+            if haematoxylin_sigma_range is not None
+            else 0.0,
             eosin_sigma_range[0] if eosin_sigma_range is not None else 0.0,
             dab_sigma_range[0] if dab_sigma_range is not None else 0.0,
         ]
@@ -216,7 +225,7 @@ class HedColorAugmenter(ColorAugmenterBase):
                 or haematoxylin_bias_range[0] < -1.0
                 or 1.0 < haematoxylin_bias_range[1]
             ):
-                raise InvalidRangeError('Haematoxylin Bias', haematoxylin_bias_range)
+                raise InvalidRangeError("Haematoxylin Bias", haematoxylin_bias_range)
 
         if eosin_bias_range is not None:
             if (
@@ -225,7 +234,7 @@ class HedColorAugmenter(ColorAugmenterBase):
                 or eosin_bias_range[0] < -1.0
                 or 1.0 < eosin_bias_range[1]
             ):
-                raise InvalidRangeError('Eosin Bias', eosin_bias_range)
+                raise InvalidRangeError("Eosin Bias", eosin_bias_range)
 
         if dab_bias_range is not None:
             if (
@@ -234,7 +243,7 @@ class HedColorAugmenter(ColorAugmenterBase):
                 or dab_bias_range[0] < -1.0
                 or 1.0 < dab_bias_range[1]
             ):
-                raise InvalidRangeError('Dab Bias', dab_bias_range)
+                raise InvalidRangeError("Dab Bias", dab_bias_range)
 
         # Store the settings.
         self._bias_ranges = [haematoxylin_bias_range, eosin_bias_range, dab_bias_range]
@@ -264,7 +273,7 @@ class HedColorAugmenter(ColorAugmenterBase):
                 or cutoff_range[0] < 0.0
                 or 1.0 < cutoff_range[1]
             ):
-                raise InvalidRangeError('Cutoff', cutoff_range)
+                raise InvalidRangeError("Cutoff", cutoff_range)
 
         # Store the setting.
         self._cutoff_range = cutoff_range if cutoff_range is not None else [0.0, 1.0]
@@ -331,41 +340,74 @@ class HedColorAugmenter(ColorAugmenterBase):
 
         # Randomize sigma and bias for each channel.
         self._sigmas = [
-            np.random.uniform(low=sigma_range[0], high=sigma_range[1], size=None) if sigma_range is not None else 1.0
+            np.random.uniform(low=sigma_range[0], high=sigma_range[1], size=None)
+            if sigma_range is not None
+            else 1.0
             for sigma_range in self._sigma_ranges
         ]
         self._biases = [
-            np.random.uniform(low=bias_range[0], high=bias_range[1], size=None) if bias_range is not None else 0.0
+            np.random.uniform(low=bias_range[0], high=bias_range[1], size=None)
+            if bias_range is not None
+            else 0.0
             for bias_range in self._bias_ranges
         ]
+
 
 class HedColorAugmenter1(HedColorAugmenter):
     def __init__(self, thresh):
         val = thresh
         bias_val = thresh
-        haematoxylin_sigma_range = (-val, val) #(tuple, None): Adjustment range for the Haematoxylin channel from the [-1.0, 1.0] range where 0.0 means no change. For example (-0.1, 0.1).
-        haematoxylin_bias_range = (-bias_val, bias_val) # (tuple, None): Bias range for the Haematoxylin channel from the [-1.0, 1.0] range where 0.0 means no change. For example (-0.2, 0.2).
-        eosin_sigma_range = (-val, val) # (tuple, None): Adjustment range for the Eosin channel from the [-1.0, 1.0] range where 0.0 means no change.
-        eosin_bias_range = (-bias_val, bias_val) # (tuple, None) Bias range for the Eosin channel from the [-1.0, 1.0] range where 0.0 means no change.
-        dab_sigma_range = (-val, val) # (tuple, None): Adjustment range for the DAB channel from the [-1.0, 1.0] range where 0.0 means no change.
-        dab_bias_range = (-bias_val, bias_val) # (tuple, None): Bias range for the DAB channel from the [-1.0, 1.0] range where 0.0 means no change.
-        cutoff_range = (0.05, 0.95) # (tuple, None) #ignore almost empty patches
+        haematoxylin_sigma_range = (
+            -val,
+            val,
+        )  # (tuple, None): Adjustment range for the Haematoxylin channel from the [-1.0, 1.0] range where 0.0 means no change. For example (-0.1, 0.1).
+        haematoxylin_bias_range = (
+            -bias_val,
+            bias_val,
+        )  # (tuple, None): Bias range for the Haematoxylin channel from the [-1.0, 1.0] range where 0.0 means no change. For example (-0.2, 0.2).
+        eosin_sigma_range = (
+            -val,
+            val,
+        )  # (tuple, None): Adjustment range for the Eosin channel from the [-1.0, 1.0] range where 0.0 means no change.
+        eosin_bias_range = (
+            -bias_val,
+            bias_val,
+        )  # (tuple, None) Bias range for the Eosin channel from the [-1.0, 1.0] range where 0.0 means no change.
+        dab_sigma_range = (
+            -val,
+            val,
+        )  # (tuple, None): Adjustment range for the DAB channel from the [-1.0, 1.0] range where 0.0 means no change.
+        dab_bias_range = (
+            -bias_val,
+            bias_val,
+        )  # (tuple, None): Bias range for the DAB channel from the [-1.0, 1.0] range where 0.0 means no change.
+        cutoff_range = (0.05, 0.95)  # (tuple, None) #ignore almost empty patches
         # cutoff_range = (0.0, 1.0)  # (tuple, None):
-        super().__init__(haematoxylin_sigma_range, haematoxylin_bias_range,
-                          eosin_sigma_range, eosin_bias_range,
-                          dab_sigma_range, dab_bias_range, cutoff_range)
+        super().__init__(
+            haematoxylin_sigma_range,
+            haematoxylin_bias_range,
+            eosin_sigma_range,
+            eosin_bias_range,
+            dab_sigma_range,
+            dab_bias_range,
+            cutoff_range,
+        )
+
 
 class HedLighterColorAugmenter(HedColorAugmenter1):
     def __init__(self):
         super().__init__(0.03)
 
+
 class HedLightColorAugmenter(HedColorAugmenter1):
     def __init__(self):
         super().__init__(0.1)
 
+
 class HedStrongColorAugmenter(HedColorAugmenter1):
     def __init__(self):
         super().__init__(1.0)
+
 
 class GrayscaleAugmentor(object):
     def __init__(self, sigma1=0.2, sigma2=0.2, augment_background=False):
@@ -381,8 +423,8 @@ class GrayscaleAugmentor(object):
         """
         self.image_shape = I.shape
         self.tissue_mask = LuminosityThresholdTissueLocator.get_tissue_mask(I).ravel()
-        self.image  = I
-        
+        self.image = I
+
     def pop(self):
         """
         Get an augmented version of the fitted image.
@@ -391,20 +433,22 @@ class GrayscaleAugmentor(object):
         alpha = np.random.uniform(1 - 0.2, 1 + 0.2)
         beta = np.random.uniform(-0.2, 0.2)
         grayscale = rgb2gray(self.image)
-        grayscale = np.clip((grayscale*alpha) + beta, 0, 1)
-        grayscale_threechannels = np.stack([grayscale,grayscale,grayscale], axis=2)
-        grayscale_threechannels = np.clip(grayscale_threechannels * 255, 0, 255).astype(np.uint8)
+        grayscale = np.clip((grayscale * alpha) + beta, 0, 1)
+        grayscale_threechannels = np.stack([grayscale, grayscale, grayscale], axis=2)
+        grayscale_threechannels = np.clip(grayscale_threechannels * 255, 0, 255).astype(
+            np.uint8
+        )
         return grayscale_threechannels
 
-class StainAugmentor(object):
 
+class StainAugmentor(object):
     def __init__(self, method, sigma1=0.2, sigma2=0.2, augment_background=False):
-        if method.lower() == 'macenko':
+        if method.lower() == "macenko":
             self.extractor = MacenkoStainExtractor
-        elif method.lower() == 'vahadane':
+        elif method.lower() == "vahadane":
             self.extractor = VahadaneStainExtractor
         else:
-            raise Exception('Method not recognized.')
+            raise Exception("Method not recognized.")
         self.sigma1 = sigma1
         self.sigma2 = sigma2
         self.augment_background = augment_background
@@ -438,7 +482,9 @@ class StainAugmentor(object):
                 augmented_concentrations[self.tissue_mask, i] *= alpha
                 augmented_concentrations[self.tissue_mask, i] += beta
 
-        I_augmented = 255 * np.exp(-1 * np.dot(augmented_concentrations, self.stain_matrix))
+        I_augmented = 255 * np.exp(
+            -1 * np.dot(augmented_concentrations, self.stain_matrix)
+        )
         I_augmented = I_augmented.reshape(self.image_shape)
         I_augmented = np.clip(I_augmented, 0, 255).astype(np.uint8)
 

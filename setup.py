@@ -11,9 +11,8 @@ setup(
     install_requires=[
         'numpy',
         'matplotlib',
-        'opencv-python',
         'scikit-image',
         'pillow',
-        'spams-bin'
+        'spams'
     ]
 )
