@@ -1,9 +1,18 @@
 import numpy as np
 import pylab as plt
-from PIL import Image
 
-def _plot_imagegrid(images, nrows_ncols=None, figsize=(10,10), show=True, titles=None, ylabels=None, wspace=0.01, hspace=0,
-                   save_path=None):
+
+def _plot_imagegrid(
+    images,
+    nrows_ncols=None,
+    figsize=(10, 10),
+    show=True,
+    titles=None,
+    ylabels=None,
+    wspace=0.01,
+    hspace=0,
+    save_path=None,
+):
     if isinstance(images, np.ndarray):
         images = np.squeeze(images)
 
@@ -12,8 +21,12 @@ def _plot_imagegrid(images, nrows_ncols=None, figsize=(10,10), show=True, titles
         nrows = int(np.floor(np.sqrt(len(images))))
         nrows_ncols = (nrows, ncols)
 
-    fig, axes = plt.subplots(nrows=nrows_ncols[0], ncols=nrows_ncols[1], figsize=figsize,
-                             gridspec_kw={'wspace': wspace, 'hspace': hspace})
+    fig, axes = plt.subplots(
+        nrows=nrows_ncols[0],
+        ncols=nrows_ncols[1],
+        figsize=figsize,
+        gridspec_kw={"wspace": wspace, "hspace": hspace},
+    )
 
     axes = list(axes.flat)
     for i, _ in enumerate(images):

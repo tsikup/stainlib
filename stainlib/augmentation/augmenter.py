@@ -5,12 +5,8 @@ See README file for credits.
 import skimage.color
 from skimage.color import rgb2gray
 import numpy as np
-import numpy as np
 import copy
-import pylab as plt
-from PIL import Image
 from stainlib.utils.excepts import  InvalidRangeError
-from stainlib.utils.stain_utils import is_uint8_image
 from stainlib.extraction.macenko_stain_extractor import MacenkoStainExtractor
 from stainlib.extraction.vahadane_stain_extractor import VahadaneStainExtractor
 from stainlib.utils.stain_utils import get_concentrations, LuminosityThresholdTissueLocator

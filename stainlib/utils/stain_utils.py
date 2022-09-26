@@ -5,8 +5,8 @@ import copy
 from stainlib.utils.excepts import TissueMaskException
 from abc import ABC, abstractmethod
 
-class ABCStainExtractor(ABC):
 
+class ABCStainExtractor(ABC):
     @staticmethod
     @abstractmethod
     def get_stain_matrix(I):
@@ -15,6 +15,7 @@ class ABCStainExtractor(ABC):
         :param I:
         :return:
         """
+
 
 class ABCTissueLocator(ABC):
     @staticmethod
@@ -26,8 +27,8 @@ class ABCTissueLocator(ABC):
         :return:
         """
 
-class LuminosityThresholdTissueLocator(ABCTissueLocator):
 
+class LuminosityThresholdTissueLocator(ABCTissueLocator):
     @staticmethod
     def get_tissue_mask(I, luminosity_threshold=0.8):
         """
@@ -47,8 +48,8 @@ class LuminosityThresholdTissueLocator(ABCTissueLocator):
             raise TissueMaskException("Empty tissue mask computed")
         return mask
 
-class LuminosityStandardizer(object):
 
+class LuminosityStandardizer(object):
     @staticmethod
     def standardize(I, percentile=95):
         """
@@ -66,6 +67,7 @@ class LuminosityStandardizer(object):
         I = cv.cvtColor(I_LAB, cv.COLOR_LAB2RGB)
         return I
 
+
 def get_concentrations(I, stain_matrix, regularizer=0.01):
     """
     Estimate concentration matrix given an image and stain matrix.
@@ -75,7 +77,12 @@ def get_concentrations(I, stain_matrix, regularizer=0.01):
     :return:
     """
     OD = convert_RGB_to_OD(I).reshape((-1, 3))
-    return spams.lasso(X=OD.T, D=stain_matrix.T, mode=2, lambda1=regularizer, pos=True).toarray().T
+    return (
+        spams.lasso(X=OD.T, D=stain_matrix.T, mode=2, lambda1=regularizer, pos=True)
+        .toarray()
+        .T
+    )
+
 
 def get_sign(x):
     """
@@ -90,6 +97,7 @@ def get_sign(x):
     elif x == 0:
         return 0
 
+
 def normalize_matrix_rows(A):
     """
     Normalize the rows of an array.
@@ -98,6 +106,7 @@ def normalize_matrix_rows(A):
     """
     return A / np.linalg.norm(A, axis=1)[:, None]
 
+
 def convert_RGB_to_OD(I):
     """
     Convert from RGB to optical density (OD_RGB) space.
@@ -105,11 +114,12 @@ def convert_RGB_to_OD(I):
     :param I: Image RGB uint8.
     :return: Optical denisty RGB image.
     """
-    mask = (I == 0)
+    mask = I == 0
     I_masked = copy.deepcopy(I)
-    I_masked[mask] = 1 
-    #I[mask] = 1
+    I_masked[mask] = 1
+    # I[mask] = 1
     return np.maximum(-1 * np.log(I_masked / 255), 1e-6)
+
 
 def convert_OD_to_RGB(OD):
 
@@ -123,6 +133,7 @@ def convert_OD_to_RGB(OD):
     OD = np.maximum(OD, 1e-6)
     return (255 * np.exp(-1 * OD)).astype(np.uint8)
 
+
 def is_image(I):
     """
     Is I an image.
@@ -133,6 +144,7 @@ def is_image(I):
         return False
     return True
 
+
 def is_uint8_image(I):
     """
     Is I a uint8 image.
@@ -142,6 +154,7 @@ def is_uint8_image(I):
     if I.dtype != np.uint8:
         return False
     return True
+
 
 def lab_split(I):
     """
@@ -157,6 +170,7 @@ def lab_split(I):
     I3 -= 128.0
     return I1, I2, I3
 
+
 def merge_back(I1, I2, I3):
     """
     Take seperate LAB channels and merge back to give RGB uint8
@@ -171,6 +185,7 @@ def merge_back(I1, I2, I3):
     I = np.clip(cv.merge((I1, I2, I3)), 0, 255).astype(np.uint8)
     return cv.cvtColor(I, cv.COLOR_LAB2RGB)
 
+
 def get_mean_std(I):
     """
     Get mean and standard deviation of each channel
@@ -184,6 +199,7 @@ def get_mean_std(I):
     means = m1, m2, m3
     stds = sd1, sd2, sd3
     return means, stds
+
 
 def standardize_brightness(I):
     """
